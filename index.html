@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050a12">
+<title>J.A.R.V.I.S.</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#050a12;color:#d9f4ff;
+ font-family:Arial,sans-serif;min-height:100vh;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden;
+}
+.app{text-align:center;width:100%;max-width:480px;padding:24px}
+.brand{letter-spacing:7px;color:#5acbff;font-size:13px}
+h1{font-size:35px;letter-spacing:8px;margin:12px 0}
+.status{font-size:11px;letter-spacing:4px;color:#65cfff}
+.core{
+ width:210px;height:210px;border-radius:50%;
+ margin:55px auto 35px;display:grid;place-items:center;
+ border:2px solid #168bc4;
+ box-shadow:0 0 25px #087dbb, inset 0 0 30px #087dbb;
+ position:relative;animation:pulse 3s infinite;
+}
+.core:before,.core:after{
+ content:"";position:absolute;border-radius:50%;
+ border:1px solid #40caff;
+}
+.core:before{inset:12px}
+.core:after{inset:28px;border-style:dashed;animation:spin 18s linear infinite}
+.orb{width:85px;height:85px;border-radius:50%;
+ background:radial-gradient(circle,#e5fbff,#28bfff 35%,#07518d 75%);
+ box-shadow:0 0 35px #22baff}
+@keyframes pulse{50%{box-shadow:0 0 55px #168bc4,inset 0 0 45px #168bc4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#answer{min-height:50px;font-size:15px;line-height:1.6;color:#b9ddec}
+button{
+ border:1px solid #27a9e9;background:#09243a;color:#dff7ff;
+ padding:16px 25px;border-radius:30px;font-size:15px;
+ margin:8px;cursor:pointer;
+}
+button:active{background:#14608b}
+input{
+ width:100%;padding:15px;border-radius:25px;
+ border:1px solid #197eb0;background:#0b1825;
+ color:white;font-size:15px;outline:none;
+}
+.controls{margin-top:20px}
+.footer{margin-top:50px;font-size:10px;letter-spacing:3px;color:#527b91}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="brand">STARK INDUSTRIES</div>
+ <h1>J.A.R.V.I.S.</h1>
+ <div class="status" id="status">SYSTEM ONLINE</div>
+ <div class="core"><div class="orb"></div></div>
+ <div id="answer">Buongiorno. Sono JARVIS. In attesa di istruzioni.</div>
+ <div class="controls">
+  <input id="command" placeholder="Scrivi un comando...">
+  <button onclick="send()">INVIA</button>
+  <button onclick="listen()">🎙 PARLA</button>
+ </div>
+ <div class="footer">PERSONAL AI SYSTEM · VERSION 1.0</div>
+</div>
+<script>
+const answer=document.getElementById("answer");
+const status=document.getElementById("status");
+function speak(text){
+ answer.textContent=text;
+ status.textContent="SPEAKING";
+ const msg=new SpeechSynthesisUtterance(text);
+ msg.lang="it-IT";
+ msg.pitch=0.8;
+ msg.rate=0.9;
+ const voices=speechSynthesis.getVoices();
+ const voice=voices.find(v=>v.lang==="it-IT");
+ if(voice)msg.voice=voice;
+ msg.onend=()=>status.textContent="SYSTEM ONLINE";
+ speechSynthesis.speak(msg);
+}
+function send(){
+ const input=document.getElementById("command");
+ const text=input.value.trim().toLowerCase();
+ if(!text)return;
+ input.value="";
+ if(text.includes("ciao"))speak("Buongiorno. Come posso aiutarla?");
+ else if(text.includes("nome"))speak("Sono JARVIS, il suo assistente personale.");
+ else if(text.includes("ora"))speak("Può consultare l'orario sul suo dispositivo.");
+ else if(text.includes("come stai"))speak("Tutti i sistemi funzionano regolarmente.");
+ else if(text.includes("grazie"))speak("È un piacere essere al suo servizio.");
+ else speak("Ho ricevuto il comando. Il mio modulo di intelligenza artificiale è ancora in fase di sviluppo.");
+}
+function listen(){
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition){speak("Riconoscimento vocale non supportato da questo browser.");return;}
+ const rec=new Recognition();
+ rec.lang="it-IT";
+ rec.onstart=()=>status.textContent="LISTENING";
+ rec.onresult=e=>{
+ document.getElementById("command").value=e.results[0][0].transcript;
+ send();
+ };
+ rec.onerror=()=>status.textContent="SYSTEM ONLINE";
+ rec.onend=()=>{if(status.textContent==="LISTENING")status.textContent="SYSTEM ONLINE"};
+ rec.start();
+}
+document.getElementById("command").addEventListener("keydown",e=>{
+ if(e.key==="Enter")send();
+});
+</script>
+</body>
+</html>
